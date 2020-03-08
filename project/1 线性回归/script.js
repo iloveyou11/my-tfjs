@@ -1,7 +1,7 @@
 import * as tf from "@tensorflow/tfjs"
 import * as tfvis from "@tensorflow/tfjs-tfvis"
 
-window.onload = () => {
+window.onload = async() => {
     const xs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     const ys = [1, 3, 5, 6, 8, 10, 12, 13, 15, 17]
 
@@ -16,29 +16,32 @@ window.onload = () => {
         xAxisDomain: [0, 10],
         yAxisDomain: [0, 20]
     });
-    // const series1 = Array(100).fill(0)
-    //     .map(y => Math.random() * 100 - (Math.random() * 50))
-    //     .map((y, x) => ({
-    //         x,
-    //         y,
-    //     }));
 
-    // const series2 = Array(100).fill(0)
-    //     .map(y => Math.random() * 100 - (Math.random() * 150))
-    //     .map((y, x) => ({
-    //         x,
-    //         y,
-    //     }));
+    // 定义一个神经元
+    const model = tf.sequential()
+    model.add(tf.layers.dense({
+        units: 1,
+        inputShape: [1]
+    }))
+    model.compile({
+        loss: tf.losses.meanSquaredError,
+        optimizer: tf.train.sgd(0.1)
+    })
 
-    // const series = ['First', 'Second'];
-    // const data = {
-    //     values: [series1, series2],
-    //     series
-    // }
+    const inputs = tf.tensor(xs)
+    const labels = tf.tensor(ys)
 
-    // const surface = {
-    //     name: 'Scatterplot',
-    //     tab: 'Charts'
-    // };
-    // tfvis.render.scatterplot(surface, data);
+    await model.fit(inputs, labels, {
+        batchSize: 10,
+        epochs: 200,
+        callbacks: tfvis.show.fitCallbacks({
+            name: '训练过程'
+        }, ['loss'])
+    })
+
+    window.onIput = e => {
+        const inputX = e.target.value
+        const outputY = model.predict(tf.tensor([inputX]))
+        document.getElementById('output').innerHTML = output.dataSync()[0]
+    }
 }
